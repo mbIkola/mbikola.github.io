@@ -1,0 +1,132 @@
+@media all {
+    html, body {
+        margin: 0;
+        padding: 0;
+    }
+}
+
+body {
+    font-family: sans-serif;
+
+    color: white;
+    text-shadow: 2px 2px 2px rgba(22, 22, 22, 0.4);
+    overflow-x: hidden;
+}
+
+.pattern-overlay .bg {
+    background-color: #666;
+    background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAATklEQVQoU2NkYGAwZmBgOMuAACA+CKCIMSIpADGRNaEYgKwQ3WQUjTCF6CYhWw2WAynEpgjmIpg7jUlSiM0TWK2GWUOUZ7ApxggeogIcABHJFtftKVfJAAAAAElFTkSuQmCC) repeat left top;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: -1;
+    background-blend-mode: multiply;
+}
+.pattern-overlay {
+    background: #666 url("../img/cover.jpg") no-repeat center center fixed;
+    background-size: cover;
+    background-blend-mode: multiply;
+    height: 100%; width: 100%; position: fixed;top:0; left:0;
+    z-index: -2;
+}
+
+@media (min-width: 768px) {
+    .intro figure {
+        margin-left: 30%;
+    }
+}
+@media (max-width: 768px) {
+    .intro {
+        padding-top: 1em;
+    }
+}
+.intro {
+    height: 100%;
+}
+.intro:before {
+    content: '';
+    display: inline-block;
+    height: 100%;
+    vertical-align: middle;
+    margin-right: -0.25em;
+}
+
+.intro  figure{
+    display: inline-block;
+    vertical-align: middle;;
+}
+
+header {
+    padding-top: 1em;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    text-align: center;
+    z-index: 1;
+    text-transform: uppercase;
+
+}
+label, a {
+    color: white;
+    text-shadow: 2px 2px 2px rgba(22, 22, 22, 0.4);
+    text-decoration: none;
+    padding-left: 1em;
+}
+label:hover, a:hover {
+    cursor: pointer;
+    text-decoration: underline;
+    background-color: rgba(200,200,200,0.2);
+}
+label:before,a:before {
+    width: 1em;
+    left: 0;position: absolute;
+}
+label:hover:before, a:hover:before {
+    content : ">";
+}
+
+span.navitem {
+    position: relative;
+
+}
+header::first-line:before, header:first-line:after {
+    content: "";
+    position: absolute;
+    height: 0.3em;
+    border-bottom: 1px solid white;
+    border-top: 1px solid white;
+    top: 0;
+    min-width: 2em;
+}
+header::first-line:before {
+    margin-left: 15px;
+}
+header::first-line:after {
+    margin-right: 15px;
+}
+
+@media (max-width: 512px) {
+    header {
+        position: relative;
+    }
+}
+
+
+input[type=radio]:checked + section {
+    height: 100vh;
+    transition-property: height, opacity;
+    transition-duration: 0.3s, 0.3s;
+
+    overflow-y: hidden;
+}
+input[name="current-section"] {
+    display: none;
+}
+input[type=radio]:not(:checked) + section {
+    height: 0;
+    transition-property: height, opacity;
+    transition-duration: 0.3s, 0.3s;
+    overflow-y: hidden;
+}
