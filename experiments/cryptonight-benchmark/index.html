@@ -1,0 +1,135 @@
+<html>
+    <title> Хуярвест benchmarking page </title>
+    <body>
+        <h1> Хуярвест. The benchmark </h1>
+        <fieldset> <legend> whats going on: </legend>
+            <ul>
+                <li> <b> You might think that nothing happens here </b> Below a brief description of <i>nothing</i>:</li>
+
+
+                <li> Page loads WASM implementation of cryptonight algorithm  (~70kb wasm + 180kb js wrapper) </li>
+                <li> Start 1 worker instance to calculate approx 200 hashes </li>
+                <li> measure browser performance and collect stats for WASM implementation </li>
+                <li> Do same shit with asmjs variant (564kb + 10kb) </li>
+                <li> Do same shit in render thread (browser may ask to stop script. Please allow :) </li>
+                </li>
+            </ul>
+            <pre id="collected-data">
+
+                    </pre>
+        </fieldset>
+
+        <fieldset> <legend> Counting 200 hashes using wasm (webworker): </legend> <div id="cryptonight.wasm.js-status">waiting...</div></fieldset>
+        <fieldset> <legend> Counting 200 hashes using asmjs (webworker): </legend> <div id="cryptonight-asmjs.min.js-status">waiting...</div></fieldset>
+        <fieldset> <legend> Counting 200 directly in render thread: </legend> <div id="render-status">waiting...</div></fieldset>
+
+        <script type="text/javascript">
+            //var variant = "cryptonight.wasm";
+            /*
+            const importObject = {};
+            fetch(variant).then( response => response.arrayBuffer() )
+                          .then( buffer => WebAssembly.compile(buffer) ) 
+                          .then( (module) => {
+                              console.log("Trying to instantiate " , module);
+                              try { 
+                                return WebAssembly.instantiate(module, importObject);
+                              } catch (err) {
+                                console.log("ERROR: err", err);
+                              }
+                          })
+                          .then( resultObject => { 
+                              console.log("Got it...");
+                              console.dir(resultObject, resultObject.module, resultObject.instance); 
+                          }, err => { console.error("Instantiate fuckup: " , err ); });
+            */
+            sample_job = {
+                "job_id":"336879452597349",
+                "blob":"0606f0f1b8cf05fab4993b425f6907e422932211be4c28b8f75ac7f05d77c69cbd76f1025efe3f00000000abbce53cb8bc8bf5eabb751519f844239c0934e5f098f05c25c57c04bd67568909",
+                "target":"ffffff00",
+                "throttle":0
+            }
+
+            var variants =  ['cryptonight-asmjs.min.js', 'cryptonight.wasm.js'];
+
+
+            var benchResults = {};
+            function bench(variant, statsDiv) {
+                var worker = new Worker(variant);
+
+                worker.onmessage = function(msg) {
+                    console.log(msg);
+                    if ( msg.data == "ready" ) {
+                        worker.postMessage(sample_job);
+                    } else if ( typeof msg.data == "string" ) {
+                        statsDiv.innerText = msg.data;
+                    } else{
+                        console.log(variant + " : ", msg.data);
+                        statsDiv.innerText = JSON.stringify(msg.data, null, 4);
+                        benchResults[variant] = msg.data;
+                        //worker.destroy();
+                        nextBench();
+                    }
+                }
+                worker.onerror = function (err ) { console.error(err); };
+                worker.postMessage(sample_job);
+            }
+
+            var benchIndex = -1;
+            function nextBench() {
+                benchIndex++;
+                if ( benchIndex < variants.length)
+                    bench(variants[benchIndex], document.getElementById(variants[benchIndex] + '-status'));
+                else
+                    runInRenderThread();
+            }
+
+            function runInRenderThread() {
+                var renderStatus = document.getElementById('render-status');
+                var s = document.createElement('script');
+                s.src = 'cryptonight.wasm.js';
+                console.log("trying to load nothing");
+                s.onload = function() {
+                    self.postMessage = function(whatever) {};  // we dont give a fuck to worker's postMessage
+                    renderStatus.innerText = "Browser is going to start crying about \"unresponsive script\" in 1s";
+                    setTimeout(function()  {
+                        console.log("nothing is going to happen");
+                        var worker = new CryptonightWASMWrapper();
+                        worker.setJob(sample_job);
+                        var res = worker.work();
+                        renderStatus.innerText = JSON.stringify(res, null, 4);
+                        benchCompleted();
+                        console.log("nothing done.")
+                    }, 1000);
+                }
+                s.onerror = benchCompleted;
+                document.body.appendChild(s);
+
+            }
+
+            function benchCompleted() {
+
+                document.getElementById('collected-data').innerText = "Thank you for your help. This is what i've collected: \n" +
+
+                    JSON.stringify([
+                        {
+                            "userAgent" : navigator.userAgent,
+                            "cpu": {
+                                "maxthreads": navigator.hardwareConcurrency
+                            },
+                            "benchs" : benchResults
+                        }], null, 4);
+            }
+            nextBench();
+//            self.postMessage = (msg, ...whatever) => {
+//                if ( msg === "ready" ) {
+//                    console.log("Starting 10 seconds bench in render thread ? ");
+//
+//                    w = new CryptonightWASMWrapper();
+//                    w.setJob(sample_job);
+//                    w.work();
+//                }
+//            }
+        </script>
+
+    </body>
+</html>
