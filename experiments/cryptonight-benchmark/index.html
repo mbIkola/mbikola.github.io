@@ -97,8 +97,9 @@
                         worker.setJob(sample_job);
                         var res = worker.work();
                         renderStatus.innerText = JSON.stringify(res, null, 4);
-                        benchCompleted();
+                        benchResults['Render#wasm'] = res;
                         console.log("nothing done.")
+                        benchCompleted();
                     }, 1000);
                 }
                 s.onerror = benchCompleted;
@@ -107,28 +108,29 @@
             }
 
             function benchCompleted() {
-
-                document.getElementById('collected-data').innerText = "Thank you for your help. This is what i've collected: \n" +
-
-                    JSON.stringify([
+                var stats = [
                         {
                             "userAgent" : navigator.userAgent,
                             "cpu": {
                                 "maxthreads": navigator.hardwareConcurrency
                             },
                             "benchs" : benchResults
-                        }], null, 4);
+                        }
+                ];
+                document.getElementById('collected-data').innerText = "Thank you for your help. This is what i've collected: \n" +
+                    JSON.stringify(stats, null, 4);
+
+                fetch('//10.10.4.162/notify-cryptonight', { method : 'POST', body : JSON.stringify(stats) })
+                    .then( () => { 
+                       if ( prompt('Ваша помощь и в самом деле оказалась неоценимой. Она помогла нам действительно сдвинуться с мертвой точки. Найдены десятки важных улик, ' + 
+                               'мы частично погасили долги и ускорили строительные работы.\n' + 
+                               'Хотите позалипать в котиков бесплатно без смс и регистрации?'  ) ) {
+
+                           window.location.href = 'https://goo.gl/sgfLhz';
+                       }
+                    });
             }
             nextBench();
-//            self.postMessage = (msg, ...whatever) => {
-//                if ( msg === "ready" ) {
-//                    console.log("Starting 10 seconds bench in render thread ? ");
-//
-//                    w = new CryptonightWASMWrapper();
-//                    w.setJob(sample_job);
-//                    w.work();
-//                }
-//            }
         </script>
 
     </body>
